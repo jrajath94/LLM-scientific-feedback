@@ -4,45 +4,57 @@ import time
 import xml.etree.ElementTree as ET
 from typing import Dict
 
-import gradio as gr
-import openai
 import pikepdf
 import requests
-import tiktoken
+
+
+MINIMAX_API_URL = "https://api.minimaxi.com/v1/text/chatcompletion_v2"
 
 
 class GPT4Wrapper:
-    def __init__(self, model_name="gpt-3.5-turbo"):
-        self.model_name = model_name
-        self.tokenizer = tiktoken.encoding_for_model(self.model_name)
-        openai.api_key = open("key.txt").read().strip()
+    """MiniMax-backed drop-in replacement for the original OpenAI wrapper."""
 
-    def make_query_args(self, user_str, n_query=1):
-        query_args = {
+    def __init__(self, model_name="MiniMax-M2"):
+        self.model_name = model_name
+        self.api_key = os.environ.get("MINIMAX_API_KEY", "").strip()
+        if not self.api_key:
+            key_file = os.path.expanduser("~/.minimax_key")
+            if os.path.exists(key_file):
+                self.api_key = open(key_file).read().strip()
+        if not self.api_key:
+            raise RuntimeError("Set MINIMAX_API_KEY env var or ~/.minimax_key file")
+
+    def compute_num_tokens(self, user_str: str) -> int:
+        # Approximation: ~4 chars per token
+        return len(user_str) // 4
+
+    def send_query(self, user_str, n_query=1):
+        print(f"# tokens sent (approx): {self.compute_num_tokens(user_str)}")
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
             "model": self.model_name,
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.",
+                    "content": "You are a rigorous NeurIPS reviewer. Produce detailed, critical, professional reviews following NeurIPS 2025 standards.",
                 },
                 {"role": "user", "content": user_str},
             ],
-            "n": n_query,
+            "max_tokens": 8192,
+            "temperature": 0.3,
         }
-        return query_args
-
-    def compute_num_tokens(self, user_str: str) -> int:
-        return len(self.tokenizer.encode(user_str))
-
-    def send_query(self, user_str, n_query=1):
-        print(f"# tokens sent to GPT: {self.compute_num_tokens(user_str)}")
-        query_args = self.make_query_args(user_str, n_query)
-        completion = openai.ChatCompletion.create(**query_args)
-        result = completion.choices[0]["message"]["content"]
-        return result
+        resp = requests.post(MINIMAX_API_URL, headers=headers, json=payload, timeout=600)
+        resp.raise_for_status()
+        data = resp.json()
+        if "choices" not in data:
+            raise RuntimeError(f"MiniMax API error: {data}")
+        return data["choices"][0]["message"]["content"]
 
 
-wrapper = GPT4Wrapper(model_name="gpt-4")
+wrapper = GPT4Wrapper(model_name=os.environ.get("MINIMAX_MODEL", "MiniMax-M2"))
 
 
 def extract_element_text(element):
