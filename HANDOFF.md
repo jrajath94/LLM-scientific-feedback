@@ -1,4 +1,4 @@
-# AI Reviewer Handoff — Finish Building This
+# AI Reviewer Handoff - Finish Building This
 
 ## Goal
 A globally-installable CLI tool (`ai-review`) that produces **NeurIPS-grade peer reviews** for any PDF, using the MiniMax API, with a **swarm council** of reviewers (theorist + empiricist + skeptic + area chair). Usable across all projects on this machine.
@@ -11,7 +11,7 @@ A globally-installable CLI tool (`ai-review`) that produces **NeurIPS-grade peer
 - **Forked repo:** `Weixin-Liang/LLM-scientific-feedback` → `jrajath94/LLM-scientific-feedback`
 - **Cloned to:** `~/ai-reviewer/`
 - **Patched `~/ai-reviewer/main.py`:** `GPT4Wrapper` class now calls MiniMax API (`https://api.minimaxi.com/v1/text/chatcompletion_v2`) instead of OpenAI. Reads key from `MINIMAX_API_KEY` env var OR `~/.minimax_key` file.
-- **Working reference script** at `/Users/rj/research-claw/papers/semcp-conformal-prediction/ai_reviewer.py` (already has a working 3-reviewer + meta-review swarm using MiniMax — use this as the swarm template).
+- **Working reference script** at `/Users/rj/research-claw/papers/semcp-conformal-prediction/ai_reviewer.py` (already has a working 3-reviewer + meta-review swarm using MiniMax - use this as the swarm template).
 
 ### MiniMax API Details
 - **Endpoint:** `https://api.minimaxi.com/v1/text/chatcompletion_v2`
@@ -22,7 +22,7 @@ A globally-installable CLI tool (`ai-review`) that produces **NeurIPS-grade peer
   ```
   sk-cp-o1xzlbG-DipkSq4KhiIVaAOADMUsZMoqzuQe6sbOc2xa4kKljWpFPt3F8oMY15KtIn9B3kiaJjic8pWCRjfpOEdBlMzJTYfPcdSDdG_rvvCXV8AHiK5NjCA
   ```
-  **NOTE:** When first tested earlier, the API returned `{"status_code":2049,"status_msg":"invalid api key"}`. User confirmed this is **MiniMax International**. The key format `sk-cp-...` is unusual for MiniMax — first task is to verify which endpoint/auth format this key actually needs. Try:
+  **NOTE:** When first tested earlier, the API returned `{"status_code":2049,"status_msg":"invalid api key"}`. User confirmed this is **MiniMax International**. The key format `sk-cp-...` is unusual for MiniMax - first task is to verify which endpoint/auth format this key actually needs. Try:
   - `https://api.minimaxi.com/v1/text/chatcompletion_v2` (v2 International)
   - `https://api.minimax.chat/v1/text/chatcompletion_pro` (China)
   - Check MiniMax International console: https://www.minimax.io/platform_overview
@@ -37,7 +37,7 @@ File: `~/ai-reviewer/main.py`
 
 - Remove remaining references to `openai`, `tiktoken`, `gradio` (grep the file).
 - Make sure `wrapper = GPT4Wrapper(...)` at module bottom only runs if key is set (lazy init, wrap in try/except or move inside a function).
-- The `step3_get_lm_review(parsed_xml)` function should still work — it uses `wrapper.send_query()`.
+- The `step3_get_lm_review(parsed_xml)` function should still work - it uses `wrapper.send_query()`.
 
 ### Step 2: Save key securely (1 min)
 ```bash
@@ -174,7 +174,7 @@ cp /Users/rj/research-claw/papers/semcp-conformal-prediction/ai_reviewer.py \
 # Then edit that file to only keep the NEURIPS_REVIEWER_PROMPT constant
 ```
 
-Or simpler — just paste the `NEURIPS_REVIEWER_PROMPT` string directly into `ai_review_cli.py`. It's ~100 lines, worth the inline.
+Or simpler - just paste the `NEURIPS_REVIEWER_PROMPT` string directly into `ai_review_cli.py`. It's ~100 lines, worth the inline.
 
 ### Step 5: Make it installable globally (5 min)
 Create `~/ai-reviewer/pyproject.toml`:
@@ -251,9 +251,9 @@ git push origin main
 | File | Purpose |
 |------|---------|
 | `~/ai-reviewer/main.py` | Stanford's original + MiniMax patch (40% done) |
-| `~/ai-reviewer/ai_review_cli.py` | **NEW** — swarm council CLI (to be built) |
-| `~/ai-reviewer/ai_reviewer_prompt.py` | **NEW** — NeurIPS prompt constant |
-| `~/ai-reviewer/pyproject.toml` | **NEW** — install config |
+| `~/ai-reviewer/ai_review_cli.py` | **NEW** - swarm council CLI (to be built) |
+| `~/ai-reviewer/ai_reviewer_prompt.py` | **NEW** - NeurIPS prompt constant |
+| `~/ai-reviewer/pyproject.toml` | **NEW** - install config |
 | `~/.minimax_key` | API key (chmod 600) |
 | `/Users/rj/research-claw/papers/semcp-conformal-prediction/ai_reviewer.py` | Working reference swarm (copy prompts from here) |
 
@@ -277,12 +277,12 @@ git push origin main
 
 ---
 
-## Once Working — Additional Enhancements (Optional)
+## Once Working - Additional Enhancements (Optional)
 
-1. **Cache PDF extraction** — hash the PDF, skip re-extraction on re-runs
+1. **Cache PDF extraction** - hash the PDF, skip re-extraction on re-runs
 2. **Add OpenReviewer** as a second backend option (fork `maxidl/openreviewer`, run its fine-tuned model locally for comparison)
-3. **Cross-project memory** — log reviews to `~/.ai-reviewer/history.jsonl` so you can track patterns across papers
-4. **MCP server wrapper** — wrap the CLI as an MCP server so Claude Code can invoke it via `ai-review` tool in any project
+3. **Cross-project memory** - log reviews to `~/.ai-reviewer/history.jsonl` so you can track patterns across papers
+4. **MCP server wrapper** - wrap the CLI as an MCP server so Claude Code can invoke it via `ai-review` tool in any project
 
 For the MCP wrapper, create `~/ai-reviewer/mcp_server.py`:
 - Use `mcp.server.Server` from the MCP Python SDK
